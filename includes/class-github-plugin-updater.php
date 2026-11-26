@@ -167,15 +167,23 @@ class Admin_Perf_Profiler_GitHub_Updater {
         // Extract version from tag (e.g., "v1.2.0" -> "1.2.0")
         $version = ltrim($data['tag_name'], 'vV');
 
-        // Find the zipball URL for the release
+        // Find the version-free ZIP asset for clean WordPress installation
         $download_url = '';
-        if (!empty($data['zipball_url'])) {
-            $download_url = $data['zipball_url'];
-        } elseif (!empty($data['assets'])) {
+        if (!empty($data['assets'])) {
+            // First, look for the version-free ZIP (admin-performance-profiler.zip)
             foreach ($data['assets'] as $asset) {
-                if (str_ends_with($asset['name'], '.zip')) {
+                if ($asset['name'] === 'admin-performance-profiler.zip') {
                     $download_url = $asset['browser_download_url'];
                     break;
+                }
+            }
+            // Fallback: look for any ZIP that matches our pattern
+            if (empty($download_url)) {
+                foreach ($data['assets'] as $asset) {
+                    if (str_ends_with($asset['name'], '.zip') && str_starts_with($asset['name'], 'admin-performance-profiler-')) {
+                        $download_url = $asset['browser_download_url'];
+                        break;
+                    }
                 }
             }
         }
