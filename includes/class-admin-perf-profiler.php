@@ -114,11 +114,58 @@ class Admin_Perf_Profiler {
         $time_taken = round($now - $last, 4);
         $this->data['last_checkpoint'] = $now;
 
-        // Track plugins taking >= threshold
+        // Extract plugin info
+        $plugin_info = $this->get_plugin_info($plugin_file);
+
+        // Store ALL plugin timings with details
+        $this->data['plugin_timings'][$plugin_file] = [
+            'time'      => $time_taken,
+            'name'      => $plugin_info['name'],
+            'slug'      => $plugin_info['slug'],
+            'file'      => $plugin_file,
+            'is_slow'   => false,
+        ];
+
+        // Mark as slow if >= threshold
         $threshold = get_option('admin_perf_prof_slow_threshold', 0.2);
         if ($time_taken >= $threshold) {
-            $this->data['plugin_timings'][$plugin_file] = $time_taken;
+            $this->data['plugin_timings'][$plugin_file]['is_slow'] = true;
         }
+    }
+
+    /**
+     * Extract plugin info from file path
+     *
+     * @param string $plugin_file Plugin file path.
+     * @return array
+     */
+    private function get_plugin_info($plugin_file) {
+        // Normalize path
+        $plugin_file = ltrim($plugin_file, '/');
+
+        // Get plugin directory name (slug)
+        $parts = explode('/', $plugin_file);
+        $slug = $parts[0] ?? 'unknown';
+
+        // Try to get plugin name from headers
+        $name = $slug;
+        $plugin_path = WP_PLUGIN_DIR . '/' . $plugin_file;
+        if (file_exists($plugin_path)) {
+            $headers = get_file_data($plugin_path, [
+                'Plugin Name' => 'Plugin Name',
+                'Name'        => 'Name',
+            ], 'plugin');
+            if (!empty($headers['Plugin Name'])) {
+                $name = $headers['Plugin Name'];
+            } elseif (!empty($headers['Name'])) {
+                $name = $headers['Name'];
+            }
+        }
+
+        return [
+            'name' => $name,
+            'slug' => $slug,
+        ];
     }
 
     /**
@@ -172,6 +219,31 @@ class Admin_Perf_Profiler {
         $plugin_timings = $this->data['plugin_timings'] ?? [];
         $milestones = $this->data['milestones'] ?? [];
 
+        // Process plugin timings - separate slow and all plugins
+        $slow_plugins = [];
+        $all_plugins = [];
+        foreach ($plugin_timings as $file => $info) {
+            if (is_array($info)) {
+                $time = $info['time'];
+                $all_plugins[$file] = $info;
+                if ($info['is_slow']) {
+                    $slow_plugins[$file] = $time; // Backward compat
+                }
+            } else {
+                // Backward compat: old format was just time value
+                $all_plugins[$file] = [
+                    'time'    => $info,
+                    'name'    => basename(dirname($file)) . '/' . basename($file),
+                    'slug'    => basename(dirname($file)),
+                    'file'    => $file,
+                    'is_slow' => $info >= (get_option('admin_perf_prof_slow_threshold', 0.2)),
+                ];
+                if ($info >= (get_option('admin_perf_prof_slow_threshold', 0.2))) {
+                    $slow_plugins[$file] = $info;
+                }
+            }
+        }
+
         $total_time = round(microtime(true) - $start, 3);
         $queries = get_num_queries() - ($this->data['query_count_start'] ?? 0);
         $peak_memory = round(memory_get_peak_usage() / 1024 / 1024, 2);
@@ -183,7 +255,8 @@ class Admin_Perf_Profiler {
             'peak_memory'     => $peak_memory,
             'http_count'      => $http_count,
             'http_requests'   => $http_requests,
-            'slow_plugins'    => $plugin_timings,
+            'slow_plugins'    => $slow_plugins,
+            'all_plugins'     => $all_plugins,
             'milestones'      => $milestones,
         ];
     }
@@ -258,10 +331,17 @@ class Admin_Perf_Profiler {
             $prev = $t;
         }
 
-        if (!empty($data['slow_plugins'])) {
-            $output .= "\nSlow Plugins Loaded (>= " . get_option('admin_perf_prof_slow_threshold', 0.2) . "s):\n";
-            foreach ($data['slow_plugins'] as $plugin => $time) {
-                $output .= sprintf("  - %s: %.3fs\n", $plugin, $time);
+        if (!empty($data['all_plugins'])) {
+            $output .= "\nAll Plugin Load Times:\n";
+            $sorted_plugins = $data['all_plugins'];
+            uasort($sorted_plugins, function($a, $b) {
+                return $b['time'] <=> $a['time'];
+            });
+            foreach ($sorted_plugins as $plugin => $info) {
+                $time = is_array($info) ? $info['time'] : $info;
+                $is_slow = is_array($info) ? ($info['is_slow'] ?? false) : ($time >= get_option('admin_perf_prof_slow_threshold', 0.2));
+                $marker = $is_slow ? ' [SLOW]' : '';
+                $output .= sprintf("  - %s: %.4fs%s\n", $plugin, $time, $marker);
             }
         }
 
@@ -381,16 +461,61 @@ class Admin_Perf_Profiler {
                     ?>
                 </table>
 
-                <!-- Slow Plugins -->
-                <?php if (!empty($data['slow_plugins'])): ?>
-                    <div style="font-weight:bold;color:#e74c3c;margin-top:10px;border-bottom:1px solid #333;padding-bottom:2px;">
-                        <?php echo esc_html__('Slow Plugins', 'admin-performance-profiler'); ?> (&ge; <?php echo esc_html(get_option('admin_perf_prof_slow_threshold', 0.2)); ?>s)
+                <!-- All Plugins Load Times -->
+                <?php if (!empty($data['all_plugins'])): ?>
+                    <div style="font-weight:bold;color:#ddd;margin-top:10px;border-bottom:1px solid #333;padding-bottom:2px;display:flex;justify-content:space-between;align-items:center;">
+                        <span><?php echo esc_html__('Plugin Load Times', 'admin-performance-profiler'); ?></span>
+                        <span style="font-size:10px;color:#888;"><?php echo esc_html__('Click to expand', 'admin-performance-profiler'); ?></span>
                     </div>
-                    <ul style="margin:4px 0 0 14px;padding:0;color:#ff7777;">
-                        <?php foreach ($data['slow_plugins'] as $plug => $tim): ?>
-                            <li><strong><?php echo esc_html(basename(dirname($plug)) . '/' . basename($plug)); ?></strong>: <?php echo esc_html($tim); ?>s</li>
+                    <table style="width:100%;margin-top:4px;border-collapse:collapse;color:#ccc;font-size:11px;">
+                        <?php
+                        // Sort plugins by time descending
+                        $sorted_plugins = $data['all_plugins'];
+                        uasort($sorted_plugins, function($a, $b) {
+                            return $b['time'] <=> $a['time'];
+                        });
+                        foreach ($sorted_plugins as $plug => $info):
+                            $time = $info['time'];
+                            $name = $info['name'] ?? basename(dirname($plug)) . '/' . basename($plug);
+                            $slug = $info['slug'] ?? basename(dirname($plug));
+                            $is_slow = $info['is_slow'] ?? false;
+                            $color = ($time >= 1.0) ? '#e74c3c' : (($time >= 0.3) ? '#f39c12' : (($time >= 0.1) ? '#3498db' : '#27ae60'));
+                        ?>
+                        <tr class="plugin-row" data-plugin="<?php echo esc_attr($plug); ?>" style="cursor:pointer;">
+                            <td style="padding:4px 8px 4px 0;color:#ccc;white-space:nowrap;">
+                                <span style="display:inline-flex;align-items:center;gap:4px;">
+                                    <span class="plugin-toggle" style="font-size:10px;color:#888;cursor:pointer;user-select:none;width:14px;text-align:center;">▶</span>
+                                    <span style="font-weight:<?php echo $is_slow ? 'bold' : 'normal'; ?>;"><?php echo esc_html($name); ?></span>
+                                    <?php if ($is_slow): ?>
+                                        <span style="background:#e74c3c;color:#fff;padding:1px 4px;border-radius:2px;font-size:8px;"><?php echo esc_html__('SLOW', 'admin-performance-profiler'); ?></span>
+                                    <?php endif; ?>
+                                </span>
+                            </td>
+                            <td style="padding:4px 0;text-align:right;color:<?php echo $color; ?>;font-weight:<?php echo $is_slow ? 'bold' : 'normal'; ?>;"><?php echo esc_html(number_format($time, 4)); ?>s</td>
+                        </tr>
+                        <!-- Expandable details row -->
+                        <tr class="plugin-details" data-plugin="<?php echo esc_attr($plug); ?>" style="display:none;">
+                            <td colspan="2" style="padding:8px;background:#111;border-top:1px solid #333;">
+                                <div style="font-size:10px;line-height:1.8;color:#999;">
+                                    <div><strong style="color:#ccc;"><?php echo esc_html__('File:', 'admin-performance-profiler'); ?></strong> <?php echo esc_html($plug); ?></div>
+                                    <div><strong style="color:#ccc;"><?php echo esc_html__('Slug:', 'admin-performance-profiler'); ?></strong> <?php echo esc_html($slug); ?></div>
+                                    <div><strong style="color:#ccc;"><?php echo esc_html__('Load Time:', 'admin-performance-profiler'); ?></strong> <span style="color:<?php echo $color; ?>;"><?php echo esc_html(number_format($time, 4)); ?>s</span></div>
+                                    <div><strong style="color:#ccc;"><?php echo esc_html__('Status:', 'admin-performance-profiler'); ?></strong>
+                                        <?php if ($is_slow): ?>
+                                            <span style="color:#e74c3c;"><?php echo esc_html__('Slow (≥ threshold)', 'admin-performance-profiler'); ?></span>
+                                        <?php elseif ($time >= 0.1): ?>
+                                            <span style="color:#f39c12;"><?php echo esc_html__('Moderate', 'admin-performance-profiler'); ?></span>
+                                        <?php elseif ($time > 0): ?>
+                                            <span style="color:#3498db;"><?php echo esc_html__('Fast', 'admin-performance-profiler'); ?></span>
+                                        <?php else: ?>
+                                            <span style="color:#27ae60;"><?php echo esc_html__('Negligible', 'admin-performance-profiler'); ?></span>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
                         <?php endforeach; ?>
-                    </ul>
+                    </table>
                 <?php endif; ?>
 
                 <!-- HTTP Requests -->
@@ -456,10 +581,32 @@ class Admin_Perf_Profiler {
                 }
             }
 
+            // Plugin row expand/collapse
+            function handlePluginToggle(e) {
+                var toggle = e.target.closest('.plugin-toggle');
+                if (!toggle) return;
+
+                var row = toggle.closest('.plugin-row');
+                if (!row) return;
+
+                var plugin = row.getAttribute('data-plugin');
+                var detailsRow = drawer.querySelector('.plugin-details[data-plugin="' + plugin + '"]');
+                var isExpanded = detailsRow.style.display !== 'none';
+
+                if (detailsRow) {
+                    detailsRow.style.display = isExpanded ? 'none' : 'table-row';
+                    toggle.textContent = isExpanded ? '▶' : '▼';
+                    toggle.setAttribute('aria-expanded', isExpanded ? 'false' : 'true');
+                }
+            }
+
             bar.addEventListener('click', handleClick);
             bar.addEventListener('keydown', handleKeydown);
             closeBtn.addEventListener('click', function() { toggleDrawer(true); });
             document.addEventListener('keydown', handleKeydown);
+
+            // Delegate click for plugin toggles (since they're dynamically added)
+            drawer.addEventListener('click', handlePluginToggle);
 
             // Close when clicking outside
             document.addEventListener('click', function(e) {
