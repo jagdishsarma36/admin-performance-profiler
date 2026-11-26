@@ -3,7 +3,7 @@
  * Plugin Name: Admin Performance Profiler
  * Plugin URI: https://github.com/jagdishsarma36/admin-performance-profiler
  * Description: Real-time execution time, memory usage, query counter, milestone breakdown, and slow plugin detector for WordPress admin.
- * Version: 1.1.0
+ * Version: 1.1.1
  * Author: Jagdish Sarma
  * Author URI: https://github.com/jagdishsarma36
  * License: GPL-2.0-or-later
@@ -21,7 +21,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Define plugin constants
-define('ADMIN_PERF_PROF_VERSION', '1.1.0');
+define('ADMIN_PERF_PROF_VERSION', '1.1.1');
 define('ADMIN_PERF_PROF_PLUGIN_FILE', __FILE__);
 define('ADMIN_PERF_PROF_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('ADMIN_PERF_PROF_PLUGIN_URL', plugin_dir_url(__FILE__));
