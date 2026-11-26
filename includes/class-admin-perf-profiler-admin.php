@@ -305,10 +305,8 @@ class Admin_Perf_Profiler_Admin {
             true
         );
 
-        // Localize script with translation strings and current performance data
-        $profiler = Admin_Perf_Profiler::get_instance();
-        $data = $profiler->get_data();
-
+        // Localize script with translation strings
+        // Note: Performance data is not available on settings page load (profiling starts after muplugins_loaded)
         wp_localize_script('admin-perf-prof-admin', 'adminPerfProfilerL10n', [
             'noData'        => esc_html__('Performance data not available on settings page.', 'admin-performance-profiler'),
             'totalTime'     => esc_html__('Total Time', 'admin-performance-profiler'),
@@ -320,8 +318,8 @@ class Admin_Perf_Profiler_Admin {
             'critical'      => esc_html__('Critical', 'admin-performance-profiler'),
         ]);
 
-        // Pass performance data to JavaScript
-        wp_add_inline_script('admin-perf-prof-admin', 'window.adminPerfProfilerData = ' . wp_json_encode($data) . ';', 'before');
+        // Pass empty performance data to JavaScript (will show "no data" message)
+        wp_add_inline_script('admin-perf-prof-admin', 'window.adminPerfProfilerData = null;', 'before');
     }
 
     /**

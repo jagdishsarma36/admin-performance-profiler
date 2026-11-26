@@ -48,8 +48,8 @@ class Admin_Perf_Profiler {
      * Constructor - Initialize hooks
      */
     private function __construct() {
-        // Early initialization for mu-plugins timing
-        add_action('muplugins_loaded', [$this, 'start_profiling'], 0);
+        // Start profiling immediately (muplugins_loaded already fired)
+        $this->start_profiling();
 
         // Capture HTTP requests
         add_action('http_api_debug', [$this, 'capture_http_request'], 10, 5);
@@ -88,6 +88,9 @@ class Admin_Perf_Profiler {
      * @param string   $url      Request URL.
      */
     public function capture_http_request($response, $context, $class, $args, $url) {
+        if (empty($this->data)) {
+            $this->start_profiling();
+        }
         $this->data['http_requests'][] = [
             'url'    => $url,
             'status' => is_wp_error($response)
@@ -103,8 +106,11 @@ class Admin_Perf_Profiler {
      * @param string $plugin_file Plugin file path.
      */
     public function measure_plugin_load_time($plugin_file) {
+        if (empty($this->data)) {
+            $this->start_profiling();
+        }
         $now = microtime(true);
-        $last = $this->data['last_checkpoint'];
+        $last = $this->data['last_checkpoint'] ?? $now;
         $time_taken = round($now - $last, 4);
         $this->data['last_checkpoint'] = $now;
 
@@ -146,6 +152,10 @@ class Admin_Perf_Profiler {
      * @param string $name Milestone name.
      */
     public function record_milestone($name) {
+        // Initialize data if not already done
+        if (empty($this->data)) {
+            $this->start_profiling();
+        }
         $start = $this->data['start_time'] ?? microtime(true);
         $this->data['milestones'][$name] = round(microtime(true) - $start, 4);
     }
@@ -156,21 +166,25 @@ class Admin_Perf_Profiler {
      * @return array
      */
     public function get_data() {
+        // Initialize defaults if profiling hasn't started yet (e.g., on settings page load)
         $start = $this->data['start_time'] ?? microtime(true);
+        $http_requests = $this->data['http_requests'] ?? [];
+        $plugin_timings = $this->data['plugin_timings'] ?? [];
+        $milestones = $this->data['milestones'] ?? [];
+
         $total_time = round(microtime(true) - $start, 3);
         $queries = get_num_queries() - ($this->data['query_count_start'] ?? 0);
         $peak_memory = round(memory_get_peak_usage() / 1024 / 1024, 2);
-        $http_count = count($this->data['http_requests']);
-        $slow_plugins = $this->data['plugin_timings'];
+        $http_count = count($http_requests);
 
         return [
             'total_time'      => $total_time,
             'queries'         => $queries,
             'peak_memory'     => $peak_memory,
             'http_count'      => $http_count,
-            'http_requests'   => $this->data['http_requests'],
-            'slow_plugins'    => $slow_plugins,
-            'milestones'      => $this->data['milestones'],
+            'http_requests'   => $http_requests,
+            'slow_plugins'    => $plugin_timings,
+            'milestones'      => $milestones,
         ];
     }
 
