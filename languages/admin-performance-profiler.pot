@@ -1,0 +1,181 @@
+# Translation template for Admin Performance Profiler
+# Copyright (C) 2024 Jagdish Sarma
+# This file is distributed under the same license as the Admin Performance Profiler package.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Admin Performance Profiler 1.1.0\n"
+"Report-Msgid-Bugs-To: https://github.com/jagdishsarma36/admin-performance-profiler/issues\n"
+"POT-Creation-Date: 2024-XX-XX 00:00+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: admin-performance-profiler.php:4
+msgid "Admin Performance Profiler"
+msgstr ""
+
+#: admin-performance-profiler.php:5
+msgid "Real-time execution time, memory usage, query counter, milestone breakdown, and slow plugin detector for WordPress admin."
+msgstr ""
+
+#: includes/class-admin-perf-profiler-admin.php:47
+msgid "Admin Perf Profiler"
+msgstr ""
+
+#: includes/class-admin-perf-profiler-admin.php:51
+msgid "General Settings"
+msgstr ""
+
+#: includes/class-admin-perf-profiler-admin.php:55
+msgid "Performance Thresholds"
+msgstr ""
+
+#: includes/class-admin-perf-profiler-admin.php:59
+msgid "About"
+msgstr ""
+
+#: includes/class-admin-perf-profiler-admin.php:63
+msgid "Enable Profiler"
+msgstr ""
+
+#: includes/class-admin-perf-profiler-admin.php:68
+msgid "Enable performance profiling for administrators"
+msgstr ""
+
+#: includes/class-admin-perf-profiler-admin.php:72
+msgid "When disabled, no profiling data will be collected or displayed."
+msgstr ""
+
+#: includes/class-admin-perf-profiler-admin.php:77
+msgid "Show Interactive Badge"
+msgstr ""
+
+#: includes/class-admin-perf-profiler-admin.php:82
+msgid "Display interactive badge in admin footer"
+msgstr ""
+
+#: includes/class-admin-perf-profiler-admin.php:86
+msgid "When disabled, performance data will still be available in HTML source comments."
+msgstr ""
+
+#: includes/class-admin-perf-profiler-admin.php:91
+msgid "Slow Plugin Threshold (seconds)"
+msgstr ""
+
+#: includes/class-admin-perf-profiler-admin.php:96
+msgid "Plugins loading slower than this threshold will be flagged as slow."
+msgstr ""
+
+#: includes/class-admin-perf-profiler-admin.php:101
+msgid "Warning Threshold (seconds)"
+msgstr ""
+
+#: includes/class-admin-perf-profiler-admin.php:106
+msgid "Total execution time above this shows a warning (orange) badge."
+msgstr ""
+
+#: includes/class-admin-perf-profiler-admin.php:111
+msgid "Critical Threshold (seconds)"
+msgstr ""
+
+#: includes/class-admin-perf-profiler-admin.php:116
+msgid "Total execution time above this shows a critical (red) badge."
+msgstr ""
+
+#: includes/class-admin-perf-profiler.php:184
+msgid "Admin Performance Profiler"
+msgstr ""
+
+#: includes/class-admin-perf-profiler.php:186
+msgid "By Jagdish Sarma • v%s"
+msgstr ""
+
+#: includes/class-admin-perf-profiler.php:193
+msgid "Total Time"
+msgstr ""
+
+#: includes/class-admin-perf-profiler.php:198
+msgid "Queries"
+msgstr ""
+
+#: includes/class-admin-perf-profiler.php:203
+msgid "Memory"
+msgstr ""
+
+#: includes/class-admin-perf-profiler.php:208
+msgid "HTTP Requests"
+msgstr ""
+
+#: includes/class-admin-perf-profiler.php:214
+msgid "Milestones"
+msgstr ""
+
+#: includes/class-admin-perf-profiler.php:223
+msgid "Slow Plugins"
+msgstr ""
+
+#: includes/class-admin-perf-profiler.php:232
+msgid "External HTTP Requests"
+msgstr ""
+
+#: includes/class-admin-perf-profiler.php:238
+msgid "Close"
+msgstr ""
+
+#: includes/class-admin-perf-profiler.php:241
+msgid "Admin Performance Profiler: %s, %d queries, %.1fMB"
+msgstr ""
+
+#: includes/class-admin-perf-profiler-admin.php:130
+msgid "Performance data will appear here after the page loads."
+msgstr ""
+
+#: includes/class-admin-perf-profiler-admin.php:135
+msgid "Current Page Performance"
+msgstr ""
+
+#: includes/class-admin-perf-profiler-admin.php:136
+msgid "No Data"
+msgstr ""
+
+#: includes/class-admin-perf-profiler-admin.php:137
+msgid "Good"
+msgstr ""
+
+#: includes/class-admin-perf-profiler-admin.php:138
+msgid "Warning"
+msgstr ""
+
+#: includes/class-admin-perf-profiler-admin.php:139
+msgid "Critical"
+msgstr ""
+
+#: includes/class-admin-perf-profiler-admin.php:140
+msgid "Total Time"
+msgstr ""
+
+#: includes/class-admin-perf-profiler-admin.php:141
+msgid "Queries"
+msgstr ""
+
+#: includes/class-admin-perf-profiler-admin.php:142
+msgid "Memory"
+msgstr ""
+
+#: includes/class-admin-perf-profiler-admin.php:143
+msgid "HTTP Requests"
+msgstr ""
+
+#: includes/class-admin-perf-profiler.php:102
+msgid "GitHub"
+msgstr ""
+
+#: includes/class-admin-perf-profiler.php:106
+msgid "Settings"
+msgstr ""

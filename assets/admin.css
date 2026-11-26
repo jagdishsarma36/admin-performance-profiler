@@ -1,0 +1,74 @@
+/**
+ * Admin Performance Profiler - Admin Styles
+ *
+ * @package Admin_Perf_Profiler
+ * @since 1.1.0
+ */
+
+.admin-perf-prof-wrap {
+    max-width: 800px;
+}
+
+.admin-perf-prof-wrap h1 {
+    margin-bottom: 20px;
+}
+
+.admin-perf-prof-wrap .form-table th {
+    width: 250px;
+}
+
+.admin-perf-prof-wrap .form-table td {
+    padding: 15px 10px;
+}
+
+.admin-perf-prof-wrap .description {
+    margin-top: 5px;
+    color: #666;
+    font-style: italic;
+}
+
+.admin-perf-prof-wrap input[type="number"] {
+    padding: 4px 8px;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+}
+
+.admin-perf-prof-preview {
+    border-radius: 4px;
+}
+
+.admin-perf-prof-preview h2 {
+    margin-top: 0;
+    font-size: 18px;
+    color: #1d2327;
+}
+
+#admin-perf-prof-preview-data {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.admin-perf-prof-preview .perf-stat {
+    display: inline-block;
+    margin-right: 20px;
+    padding: 8px 12px;
+    background: #f6f7f7;
+    border-radius: 4px;
+}
+
+.admin-perf-prof-preview .perf-stat strong {
+    color: #1d2327;
+}
+
+.admin-perf-prof-preview .perf-stat.good strong {
+    color: #27ae60;
+}
+
+.admin-perf-prof-preview .perf-stat.warning strong {
+    color: #e67e22;
+}
+
+.admin-perf-prof-preview .perf-stat.critical strong {
+    color: #e74c3c;
+}

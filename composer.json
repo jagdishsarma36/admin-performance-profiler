@@ -1,0 +1,40 @@
+{
+    "name": "jagdishsarma36/admin-performance-profiler",
+    "description": "Real-time execution time, memory usage, query counter, milestone breakdown, and slow plugin detector for WordPress admin.",
+    "type": "wordpress-plugin",
+    "license": "GPL-2.0-or-later",
+    "authors": [
+        {
+            "name": "Jagdish Sarma",
+            "email": "jagdish@example.com",
+            "homepage": "https://github.com/jagdishsarma36"
+        }
+    ],
+    "require": {
+        "php": ">=7.4"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^9.5",
+        "wp-coding-standards/wpcs": "^3.0",
+        "squizlabs/php_codesniffer": "^3.7"
+    },
+    "autoload": {
+        "psr-4": {
+            "Admin_Perf_Profiler\\": "includes/"
+        },
+        "files": [
+            "admin-performance-profiler.php"
+        ]
+    },
+    "config": {
+        "optimize-autoloader": true,
+        "sort-packages": true
+    },
+    "scripts": {
+        "test": "phpunit",
+        "cs": "phpcs --standard=WordPress includes/ admin-performance-profiler.php",
+        "cs-fix": "phpcbf --standard=WordPress includes/ admin-performance-profiler.php"
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}
